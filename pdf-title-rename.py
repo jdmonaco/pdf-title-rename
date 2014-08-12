@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 
 """
-A script to batch rename pdfs based on title
+A script to batch rename pdfs based on metadata/XMP title and author
+
+Requirements:
+    - PDFMiner: https://github.com/euske/pdfminer/
+    - xmp: lightweight XMP parser from
+        http://blog.matt-swain.com/post/25650072381/
+            a-lightweight-xmp-parser-for-extracting-pdf-metadata-in
 """
 
 from __future__ import print_function, division
