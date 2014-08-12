@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-A script to batch rename pdfs based on metadata/XMP title and author
+A script to batch rename PDF files based on metadata/XMP title and author
 
 Requirements:
     - PDFMiner: https://github.com/euske/pdfminer/
@@ -41,13 +41,13 @@ class RenamePDFsByTitle(object):
             path, base = os.path.split(f)
             title, author = self._get_info(f)
             if title:
-                g = os.path.join(path, self._new_filename(base, title, author))
+                g = os.path.join(path, self._new_filename(title, author))
                 print('moving', '\"%s\"' % f, 'to', '\"%s\"' % g)
                 if not self.dry_run:
                     os.rename(f, g)
         return 0
 
-    def _new_filename(self, oldfn, title, author):
+    def _new_filename(self, title, author):
         n = self._sanitize(title)
         if author:
             n = '%s - %s' % (self._sanitize(author), n)
