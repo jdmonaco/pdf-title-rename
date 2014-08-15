@@ -101,13 +101,16 @@ class RenamePDFsByTitle(object):
         except KeyError:
             pass
         else:
-            if type(a) is list and len(a) == 1:
-                a = a[0]
-            if type(a) is list:
+            if type(a) is str:
+                a = [a]
+            a = filter(bool, a)  # remove None, empty strings, ...
+            if len(a) > 1:
                 a = '%s %s' % (self._au_last_name(a[0]),
                         self._au_last_name(a[-1]))
-            elif type(a) is str:
-                a = self._au_last_name(a)
+            elif len(a) == 1:
+                a = self._au_last_name(a[0])
+            else:
+                a = None
         return t, a
 
     def _au_last_name(self, name):
