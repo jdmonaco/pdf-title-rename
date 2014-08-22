@@ -34,6 +34,13 @@ class RenamePDFsByTitle(object):
     def __init__(self, args):
         self.pdf_files = args.files
         self.dry_run = args.dry_run
+        #self.interactive = args.interactive
+        self.destination = None
+        if args.destination:
+            if os.path.isdir(args.destination):
+                self.destination = args.destination
+            else:
+                print('warning: destination is not a valid directory')
 
     def main(self):
         """Entry point for running the script."""
@@ -43,8 +50,15 @@ class RenamePDFsByTitle(object):
             if title:
                 g = os.path.join(path, self._new_filename(title, author))
                 print('moving', '\"%s\"' % f, 'to', '\"%s\"' % g)
-                if not self.dry_run:
-                    os.rename(f, g)
+                if self.dry_run:
+                    continue
+                os.rename(f, g)
+                if self.destination is not None:
+                    ret = subprocess.call(['mv', g, self.destination])
+                    if ret == 0:
+                        print('--> filed to', self.destination)
+                    else:
+                        print('--> error moving file')
         return 0
 
     def _new_filename(self, title, author):
@@ -123,6 +137,10 @@ if __name__ == "__main__":
                         help='list of pdf files to rename')
     parser.add_argument('-n', dest='dry_run', action='store_true',
                         help='dry-run listing of filename changes')
+    #parser.add_argument('-i', dest='interactive', action='store_true',
+                        #help='interactive mode')
+    parser.add_argument('-d', '--dest', dest='destination',
+                        help='destination folder for renamed files')
     args = parser.parse_args()
     sys.exit(RenamePDFsByTitle(args).main())
 
