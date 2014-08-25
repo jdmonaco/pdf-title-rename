@@ -34,7 +34,7 @@ class RenamePDFsByTitle(object):
     def __init__(self, args):
         self.pdf_files = args.files
         self.dry_run = args.dry_run
-        #self.interactive = args.interactive
+        self.interactive = args.interactive
         self.destination = None
         if args.destination:
             if os.path.isdir(args.destination):
@@ -49,10 +49,14 @@ class RenamePDFsByTitle(object):
             title, author = self._get_info(f)
             if title:
                 g = os.path.join(path, self._new_filename(title, author))
-                print('moving', '\"%s\"' % f, 'to', '\"%s\"' % g)
+                print('--> moving', '\"%s\"' % f, 'to', '\"%s\"' % g)
                 if self.dry_run:
                     continue
-                os.rename(f, g)
+                try:
+                    os.rename(f, g)
+                except OSError:
+                    print('--> error renaming file, maybe it moved?')
+                    continue
                 if self.destination is not None:
                     ret = subprocess.call(['mv', g, self.destination])
                     if ret == 0:
@@ -88,7 +92,28 @@ class RenamePDFsByTitle(object):
                     title = ti
                 if au:
                     author = au
+        if self.interactive:
+            title, author = self._interactive_info_query(filename, title, author)
         return title, author
+
+    def _interactive_info_query(self, fn, t, a):
+        print('-' * 60)
+        print('Filename:'.ljust(20), fn)
+        print(' * Found (t)itle:'.ljust(20), '\"%s\"' % str(t))
+        print(' * Found (a)uthors:'.ljust(20), '\"%s\"' % str(a))
+        ri = lambda p: raw_input(p).lower().strip()
+        ans = ri('Change (t/a) or open (o) or keep (k)? (t/a/o/k) ')
+        while ans != 'k':
+            if ans == 't':
+                t = raw_input('New title: ').strip()
+            elif ans == 'a':
+                a = raw_input('New author string: ').strip()
+            elif ans == 'o':
+                subprocess.call(['open', fn])
+            else:
+                print('Bad option, please choose again:')
+            ans = ri('(t/a/o/k) ')
+        return t, a
 
     def _get_metadata(self, h):
         parser = PDFParser(h)
@@ -137,8 +162,8 @@ if __name__ == "__main__":
                         help='list of pdf files to rename')
     parser.add_argument('-n', dest='dry_run', action='store_true',
                         help='dry-run listing of filename changes')
-    #parser.add_argument('-i', dest='interactive', action='store_true',
-                        #help='interactive mode')
+    parser.add_argument('-i', dest='interactive', action='store_true',
+                        help='interactive mode')
     parser.add_argument('-d', '--dest', dest='destination',
                         help='destination folder for renamed files')
     args = parser.parse_args()
