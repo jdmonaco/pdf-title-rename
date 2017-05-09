@@ -10,7 +10,7 @@ Requirements:
             a-lightweight-xmp-parser-for-extracting-pdf-metadata-in
 """
 
-from __future__ import print_function, division
+
 
 import os
 import sys
@@ -73,7 +73,7 @@ class RenamePDFsByTitle(object):
         return n
 
     def _sanitize(self, s):
-        keep = [' ', '.', '_', '-', u'\u2014']
+        keep = [' ', '.', '_', '-', '\u2014']
         return "".join(c for c in s if c.isalnum() or c in keep).strip()
 
     def _get_info(self, filename):
@@ -101,13 +101,13 @@ class RenamePDFsByTitle(object):
         print('Filename:'.ljust(20), fn)
         print(' * Found (t)itle:'.ljust(20), '\"%s\"' % str(t))
         print(' * Found (a)uthors:'.ljust(20), '\"%s\"' % str(a))
-        ri = lambda p: raw_input(p).lower().strip()
+        ri = lambda p: input(p).lower().strip()
         ans = ri('Change (t/a) or open (o) or keep (k)? (t/a/o/k) ')
         while ans != 'k':
             if ans == 't':
-                t = raw_input('New title: ').strip()
+                t = input('New title: ').strip()
             elif ans == 'a':
-                a = raw_input('New author string: ').strip()
+                a = input('New author string: ').strip()
             elif ans == 'o':
                 subprocess.call(['open', fn])
             else:
@@ -142,7 +142,7 @@ class RenamePDFsByTitle(object):
         else:
             if type(a) is str:
                 a = [a]
-            a = filter(bool, a)  # remove None, empty strings, ...
+            a = list(filter(bool, a))  # remove None, empty strings, ...
             if len(a) > 1:
                 a = '%s %s' % (self._au_last_name(a[0]),
                         self._au_last_name(a[-1]))
