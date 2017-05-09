@@ -78,7 +78,7 @@ class RenamePDFsByTitle(object):
 
     def _get_info(self, filename):
         title = author = None
-        with file(filename, 'rb') as pdf:
+        with open(filename, 'rb') as pdf:
             info = self._get_metadata(pdf)
             if not info:
                 return title, author
