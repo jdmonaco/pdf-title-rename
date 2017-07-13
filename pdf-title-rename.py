@@ -123,33 +123,42 @@ class RenamePDFsByTitle(object):
             info = self._get_metadata(pdf)
 
             if 'Title' in info:
+                ti = self._resolve_objref(info['Title'])
                 try:
-                    title = info['Title'].decode()
+                    title = ti.decode()
                 except AttributeError:
                     pass
-                else:
-                    title = title.strip()
 
             if 'Author' in info:
+                au = self._resolve_objref(info['Author'])
                 try:
-                    author = info['Author'].decode()
+                    author = au.decode()
                 except AttributeError:
                     pass
 
             if 'Metadata' in self.doc.catalog:
                 xmpt, xmpa = self._get_xmp_metadata()
+                xmpt = self._resolve_objref(xmpt)
+                xmpa = self._resolve_objref(xmpa)
                 if xmpt:
                     title = xmpt
                 if xmpa:
                     author = xmpa
 
-        if type(title) is str and title.lower().strip() == 'untitled':
-            title = None
+        if type(title) is str:
+            title = title.strip()
+            if title.lower() == 'untitled':
+                title = None
 
         if self.interactive:
             title, author = self._interactive_info_query(fn, title, author)
 
         return title, author
+
+    def _resolve_objref(self, ref):
+        if hasattr(ref, 'resolve'):
+            return ref.resolve()
+        return ref
 
     def _interactive_info_query(self, fn, t, a):
         print('-' * 60)
