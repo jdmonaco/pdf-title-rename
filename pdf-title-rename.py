@@ -11,6 +11,10 @@ Requirements:
 """
 
 
+NAME = 'pdf-title-rename'
+VERSION = '0.0.2'
+DATE = '2017-07-13'
+
 
 import os
 import sys
@@ -44,25 +48,61 @@ class RenamePDFsByTitle(object):
 
     def main(self):
         """Entry point for running the script."""
+        Ntot = len(self.pdf_files)
+        Nrenamed = 0
+        Nfiled = 0
+        Nmissing = 0
+        Nerrors = 0
+
         for f in self.pdf_files:
-            path, base = os.path.split(f)
+            root, ext = os.path.splitext(f)
+            path, base = os.path.split(root)
+            print('Processing \"%s\":' % f)
+
+            # Parse standard and XMP metadata, then go interactive if specified
             title, author = self._get_info(f)
-            if title:
-                g = os.path.join(path, self._new_filename(title, author))
-                print('--> moving', '\"%s\"' % f, 'to', '\"%s\"' % g)
-                if self.dry_run:
-                    continue
-                try:
-                    os.rename(f, g)
-                except OSError:
-                    print('--> error renaming file, maybe it moved?')
-                    continue
-                if self.destination is not None:
-                    ret = subprocess.call(['mv', g, self.destination])
-                    if ret == 0:
-                        print('--> filed to', self.destination)
-                    else:
-                        print('--> error moving file')
+
+            # Reuse the base filename if there is an author but no title
+            if author and not title:
+                title = base
+
+            if not (author or title):
+                print(' -- Could not find metadata for \"%s\"' % f)
+                Nmissing += 1
+                continue
+
+            newf = os.path.join(path, self._new_filename(title, author))
+            print(' -- Renaming to \"%s\"' % newf)
+            if self.dry_run:
+                continue
+
+            try:
+                os.rename(f, newf)
+            except OSError:
+                print(' -- Error renaming file, maybe it moved?')
+                Nerrors += 1
+                continue
+            else:
+                Nrenamed += 1
+
+            if self.destination:
+                if subprocess.call(['mv', newf, self.destination]) == 0:
+                    print(' -- Filed to', self.destination)
+                    Nfiled += 1
+                else:
+                    print(' -- Error moving file')
+                    Nerrors += 1
+
+        if self.dry_run:
+            print('Processed %d files [dry run]:' % Ntot)
+        else:
+            print('Processed %d files:' % Ntot)
+        print(' - Renamed: %d' % Nrenamed)
+        if self.destination:
+            print(' - Filed: %d' % Nfiled)
+        print(' - Missing metadata: %d' % Nmissing)
+        print(' - Errors: %d' % Nerrors)
+
         return 0
 
     def _new_filename(self, title, author):
@@ -76,24 +116,39 @@ class RenamePDFsByTitle(object):
         keep = [' ', '.', '_', '-', '\u2014']
         return "".join(c for c in s if c.isalnum() or c in keep).strip()
 
-    def _get_info(self, filename):
+    def _get_info(self, fn):
         title = author = None
-        with open(filename, 'rb') as pdf:
+
+        with open(fn, 'rb') as pdf:
             info = self._get_metadata(pdf)
-            if not info:
-                return title, author
-            if 'Title' in info and info['Title'].strip() != 'untitled':
-                title = info['Title'].strip()
-            if 'Author' in info and info['Author'].strip():
-                author = self._au_last_name(info['Author'].strip())
+
+            if 'Title' in info:
+                try:
+                    title = info['Title'].decode()
+                except AttributeError:
+                    pass
+                else:
+                    title = title.strip()
+
+            if 'Author' in info:
+                try:
+                    author = info['Author'].decode()
+                except AttributeError:
+                    pass
+
             if 'Metadata' in self.doc.catalog:
-                ti, au = self._get_xmp_metadata()
-                if type(ti) is str and ti.strip().lower() != 'untitled':
-                    title = ti
-                if au:
-                    author = au
+                xmpt, xmpa = self._get_xmp_metadata()
+                if xmpt:
+                    title = xmpt
+                if xmpa:
+                    author = xmpa
+
+        if type(title) is str and title.lower().strip() == 'untitled':
+            title = None
+
         if self.interactive:
-            title, author = self._interactive_info_query(filename, title, author)
+            title, author = self._interactive_info_query(fn, title, author)
+
         return title, author
 
     def _interactive_info_query(self, fn, t, a):
@@ -131,10 +186,12 @@ class RenamePDFsByTitle(object):
             md = xmp_to_dict(metadata)
         except:
             return t, a
+
         try:
             t = md['dc']['title']['x-default']
         except KeyError:
             pass
+
         try:
             a = md['dc']['creator']
         except KeyError:
@@ -144,12 +201,12 @@ class RenamePDFsByTitle(object):
                 a = [a]
             a = list(filter(bool, a))  # remove None, empty strings, ...
             if len(a) > 1:
-                a = '%s %s' % (self._au_last_name(a[0]),
-                        self._au_last_name(a[-1]))
+                a = '%s %s' % (self._au_last_name(a[0]), self._au_last_name(a[-1]))
             elif len(a) == 1:
                 a = self._au_last_name(a[0])
             else:
                 a = None
+
         return t, a
 
     def _au_last_name(self, name):
