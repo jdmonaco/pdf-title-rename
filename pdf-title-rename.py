@@ -57,7 +57,7 @@ class RenamePDFsByTitle(object):
         for f in self.pdf_files:
             root, ext = os.path.splitext(f)
             path, base = os.path.split(root)
-            print('Processing \"%s\":' % f)
+            print('Processing "%s":' % f)
 
             # Parse standard and XMP metadata, then go interactive if specified
             title, author = self._get_info(f)
@@ -67,12 +67,12 @@ class RenamePDFsByTitle(object):
                 title = base
 
             if not (author or title):
-                print(' -- Could not find metadata for \"%s\"' % f)
+                print(' -- Could not find metadata in the file')
                 Nmissing += 1
                 continue
 
             newf = os.path.join(path, self._new_filename(title, author))
-            print(' -- Renaming to \"%s\"' % newf)
+            print(' -- Renaming to "%s"' % newf)
             if self.dry_run:
                 continue
 
