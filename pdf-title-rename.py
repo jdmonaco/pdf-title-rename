@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 A script to batch rename PDF files based on metadata/XMP title and author
@@ -12,8 +12,8 @@ Requirements:
 
 
 NAME = 'pdf-title-rename'
-VERSION = '0.0.2'
-DATE = '2017-07-13'
+VERSION = '0.0.3'
+DATE = '2017-07-15'
 
 
 import os
@@ -125,16 +125,20 @@ class RenamePDFsByTitle(object):
             if 'Title' in info:
                 ti = self._resolve_objref(info['Title'])
                 try:
-                    title = ti.decode()
+                    title = ti.decode('utf-8')
                 except AttributeError:
                     pass
+                except UnicodeDecodeError:
+                    print(' -- Could not decode title bytes: %r' % ti)
 
             if 'Author' in info:
                 au = self._resolve_objref(info['Author'])
                 try:
-                    author = au.decode()
+                    author = au.decode('utf-8')
                 except AttributeError:
                     pass
+                except UnicodeDecodeError:
+                    print(' -- Could not decode author bytes: %r' % ti)
 
             if 'Metadata' in self.doc.catalog:
                 xmpt, xmpa = self._get_xmp_metadata()
@@ -206,6 +210,8 @@ class RenamePDFsByTitle(object):
         except KeyError:
             pass
         else:
+            if type(a) is bytes:
+                a = a.decode('utf-8')
             if type(a) is str:
                 a = [a]
             a = list(filter(bool, a))  # remove None, empty strings, ...
