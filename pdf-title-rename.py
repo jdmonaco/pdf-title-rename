@@ -138,7 +138,7 @@ class RenamePDFsByTitle(object):
                 except AttributeError:
                     pass
                 except UnicodeDecodeError:
-                    print(' -- Could not decode author bytes: %r' % ti)
+                    print(' -- Could not decode author bytes: %r' % au)
 
             if 'Metadata' in self.doc.catalog:
                 xmpt, xmpa = self._get_xmp_metadata()
