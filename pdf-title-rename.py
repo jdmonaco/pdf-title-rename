@@ -190,6 +190,9 @@ class RenamePDFsByTitle(object):
         except PDFSyntaxError:
             return {}
         parser.set_document(doc)
+
+        if not hasattr(doc, 'info') or len(doc.info) == 0:
+            return {}
         return doc.info[0]
 
     def _get_xmp_metadata(self):
