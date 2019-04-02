@@ -7,7 +7,11 @@ A batch-renaming script for PDF files based on the Title and Author information 
 
 Only the article title is used if no author information is found. First and last author surnames are used if the `creator` field in the XMP is a list of more than one author. 
 
-To use the script, simply pass in a list or glob of PDF filenames. If you want to see what it would do without changing anything, do a dry run with `-n`. There is also an interactive mode with `-i` that will let you open the files and manually enter titles and author strings if you have problematic PDFs without proper metadata.
+To use the script, you can list one or more file paths to PDF files that should be processed. If you have downloaded a large number of files in a particular directory, you can use the shell expansion wildcard `*` to list those files; for example,
+
+    pdf-title-rename path/to/folder/*.pdf
+
+will process all `.pdf` files in `path/to/folder`. If you want to see what it would do without changing anything, do a dry run with `-n`. There is also an interactive mode with `-i` that will let you open the files and manually enter titles and author strings if you have problematic PDFs without proper metadata.
 
     usage: pdf-title-rename [-h] [-n] [-i] [-d DESTINATION] files [files ...]
 
