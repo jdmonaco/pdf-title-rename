@@ -31,7 +31,7 @@ This script is intended as a first pass in an academic PDF workflow to get brows
 
 ## Requirements
 
-The PDF parsing uses [PDFMiner](https://github.com/euske/pdfminer/). The XMP parsing uses [this xmp module](http://blog.matt-swain.com/post/25650072381/a-lightweight-xmp-parser-for-extracting-pdf-metadata-in). Important: For XMP parsing to work, you will need to copy the code from that link to an `xmp.py` file and put it on your `PYTHONPATH`. (Note, I've now included `xmp.py` in the repo in case that link goes away; you still have to put it on your path.)
+The PDF parsing uses [PDFMiner](https://github.com/pdfminer/pdfminer.six). The XMP parsing uses [this xmp module](http://blog.matt-swain.com/post/25650072381/a-lightweight-xmp-parser-for-extracting-pdf-metadata-in). Important: For XMP parsing to work, you will need to copy the code from that link to an `xmp.py` file and put it on your `PYTHONPATH`. (Note, I've now included `xmp.py` in the repo in case that link goes away; you still have to put it on your python path.)
 
- * [PDFMiner](https://github.com/euske/pdfminer/)
+ * [PDFMiner](https://github.com/pdfminer/pdfminer.six)
  * [xmp](http://blog.matt-swain.com/post/25650072381/a-lightweight-xmp-parser-for-extracting-pdf-metadata-in)
