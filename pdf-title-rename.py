@@ -4,7 +4,7 @@
 A script to batch rename PDF files based on metadata/XMP title and author
 
 Requirements:
-    - PDFMiner: https://github.com/euske/pdfminer/
+    - PDFMiner: https://github.com/pdfminer/pdfminer.six
     - xmp: lightweight XMP parser from
         http://blog.matt-swain.com/post/25650072381/
             a-lightweight-xmp-parser-for-extracting-pdf-metadata-in
@@ -12,7 +12,7 @@ Requirements:
 
 
 NAME = 'pdf-title-rename'
-VERSION = '0.0.3'
+VERSION = '0.1.0'
 DATE = '2017-07-15'
 
 
@@ -205,6 +205,14 @@ class RenamePDFsByTitle(object):
 
         try:
             t = md['dc']['title']['x-default']
+        except TypeError:
+            # The 'title' field might be a string or bytes instead of a dict
+            # https://github.com/jdmonaco/pdf-title-rename/issues/7
+            titleval = md['dc']['title']
+            if type(titleval) is str:
+                t = titleval
+            elif type(titleval) is bytes:
+                t = titleval.decode()
         except KeyError:
             pass
 
